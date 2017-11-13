@@ -5,7 +5,7 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileChannel.MapMode
 
-import com.github.cgdon.sfqueue.ex.FileFormatException
+import com.github.cgdon.sfqueue.ex.SFQueueException
 
 /**
   * queue文件接口
@@ -14,9 +14,14 @@ import com.github.cgdon.sfqueue.ex.FileFormatException
 trait QueueFile extends AutoCloseable {
 
   val version = 1
+
+  var FILE_LIMIT: Int = _
+  val DATA_HEADER_LENGTH = 16
   var raFile: RandomAccessFile = _
   var fc: FileChannel = _
   var mbBuffer: MappedByteBuffer = _
+
+  val MAGIC_CHARSET = "iso-8859-1"
 
   /**
     * 返回该文件的magic
@@ -40,27 +45,35 @@ trait QueueFile extends AutoCloseable {
   }
 
   /**
+    */
+
+  /**
+    *
     * 初始化内存文件映射相关对象
+    *
+    * @param f             文件
+    * @param initMaxLength 初始时文件最大长度
+    * @return
     */
   def initMemoryMapFile(f: File, initMaxLength: Int): Unit = {
     raFile = new RandomAccessFile(f, "rwd")
     fc = raFile.getChannel
-    mbBuffer = fc.map(MapMode.READ_WRITE, 0, initMaxLength)
+    FILE_LIMIT = math.max(f.length().toInt, initMaxLength)
+    mbBuffer = fc.map(MapMode.READ_WRITE, 0, FILE_LIMIT)
   }
 
   /**
     * 读取magic
     *
-    * @param buffer
     * @return
     */
-  def readMagic(buffer: MappedByteBuffer): String = {
+  def readMagic(): String = {
     // read magic
     val magicBuf = new Array[Byte](8)
-    buffer.get(magicBuf)
+    mbBuffer.get(magicBuf)
     val _magic = new String(magicBuf)
     if (_magic != magic()) {
-      throw new FileFormatException("Index file format error, magic incorrect!")
+      throw SFQueueException("Index file format error, magic incorrect!")
     }
     _magic
   }

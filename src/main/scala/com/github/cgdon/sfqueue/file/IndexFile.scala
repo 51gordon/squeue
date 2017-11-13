@@ -1,27 +1,24 @@
 package com.github.cgdon.sfqueue.file
 
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicLong
 
-import com.github.cgdon.sfqueue.ex.FileFormatException
+import com.github.cgdon.sfqueue.ex.SFQueueException
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
 class IndexFile(parent: File) extends QueueFile {
-  private val INDEX_FILE_NAME = "sfq.idx"
-  private val INDEX_LIMIT_LENGTH = 36
 
   // file index and offset
-  var readIdx: Int = 1
-  var readPos: Int = 0
-  var writeIdx: Int = 1
-  var writePos: Int = 0
-  val queuSize = new AtomicLong()
+  var readIdx: Int = -1
+  var readPos: Int = -1
+  var writeIdx: Int = -1
+  var writePos: Int = -1
+  val queueSize = new AtomicLong(0)
 
-  private val idxFile = new File(parent, INDEX_FILE_NAME)
-  init(idxFile, INDEX_LIMIT_LENGTH)
+  private val idxFile = new File(parent, IndexFile.INDEX_FILE_NAME)
+  init(idxFile, IndexFile.INDEX_LIMIT_LENGTH)
 
   override def magic(): String = "sfqueidx"
 
@@ -29,33 +26,30 @@ class IndexFile(parent: File) extends QueueFile {
     * 初始化文件
     */
   override def initFile(): Unit = {
-    raFile.writeUTF(magic()) // write magic(start: 0)
-    raFile.writeInt(version) // write version(start:8)
-    raFile.writeInt(1) // write read index(start:12)
-    raFile.writeInt(0) // write read (start:16)
-    raFile.writeInt(1) // write write index(start:20)
-    raFile.writeInt(0) // write write pos(start:24)
-    // write size(long)
-    raFile.writeLong(0L) // // write write pos(start:28)
+    mbBuffer.put(magic().getBytes(MAGIC_CHARSET))
+    mbBuffer.putInt(version)
+    mbBuffer.putInt(1) // put read index(start:12)
+    mbBuffer.putInt(DATA_HEADER_LENGTH) // put read pos(start:16)
+    mbBuffer.putInt(1) // put write index(start:20)
+    mbBuffer.putInt(DATA_HEADER_LENGTH) // put write pos(start:24)
+    mbBuffer.putLong(0L) // put size pos(start:28)
   }
 
   /**
     * 加载文件
     */
   override def loadFile(): Unit = {
-    if (raFile.length() < INDEX_LIMIT_LENGTH) {
-      throw new FileFormatException("Index file format error, length incorrect!")
+    if (raFile.length() < IndexFile.INDEX_LIMIT_LENGTH) {
+      throw SFQueueException("Index file format error, length incorrect!")
     }
-    val bytes = new Array[Byte](INDEX_LIMIT_LENGTH)
-    val buffer = ByteBuffer.wrap(bytes)
-
-    readMagic(mbBuffer)
-
-    readIdx = buffer.getInt
-    readPos = buffer.getInt()
-    writeIdx = buffer.getInt()
-    writePos = buffer.getInt()
-    queuSize.set(buffer.getLong())
+    mbBuffer.position(0)
+    readMagic()
+    mbBuffer.getInt() // version
+    readIdx = mbBuffer.getInt
+    readPos = mbBuffer.getInt()
+    writeIdx = mbBuffer.getInt()
+    writePos = mbBuffer.getInt()
+    queueSize.set(mbBuffer.getLong())
   }
 
   def putReadIdx(idx: Int): Unit = {
@@ -85,19 +79,19 @@ class IndexFile(parent: File) extends QueueFile {
   }
 
   def incrementSize(): Unit = {
-    val newSize = queuSize.incrementAndGet()
+    val newSize = queueSize.incrementAndGet()
     mbBuffer.position(28)
     mbBuffer.putLong(newSize)
   }
 
   def decrementSize(): Unit = {
-    val newSize = queuSize.decrementAndGet()
+    val newSize = queueSize.decrementAndGet()
     mbBuffer.position(28)
     mbBuffer.putLong(newSize)
   }
 
   def size(): Long = {
-    queuSize.get()
+    queueSize.get()
   }
 
   /**
@@ -108,4 +102,9 @@ class IndexFile(parent: File) extends QueueFile {
     mbBuffer.force()
     initFile()
   }
+}
+
+object IndexFile {
+  val INDEX_FILE_NAME = "sfq.idx"
+  val INDEX_LIMIT_LENGTH = 36
 }

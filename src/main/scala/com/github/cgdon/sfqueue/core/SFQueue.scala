@@ -2,31 +2,33 @@ package com.github.cgdon.sfqueue.core
 
 import java.io.File
 
-import com.github.cgdon.sfqueue.file.{ IndexFile, ReadDataFile, WriteDataFile }
+import com.github.cgdon.sfqueue.file._
 
 /**
   * Created by 成国栋 on 2017-11-11 00:26:00.
   */
-class SFQueue(dir: File, maxDataFileLength: Int = 1 << 30) {
+class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
 
+  var readDataFile: ReadDataFile = _
+  var writeDataFile: WriteDataFile = _
+
+  dir.mkdirs()
+  // 初始化索引文件和待处理的数据文件
   val idxFile = new IndexFile(dir)
+  initDataFiles()
 
-  val readDataFile: ReadDataFile =
-    new ReadDataFile(dir, idxFile.readIdx, maxDataFileLength, idxFile.readPos)
-  val writeDataFile: WriteDataFile =
-    new WriteDataFile(dir, idxFile.writeIdx, maxDataFileLength, idxFile.writePos)
-
-  def this(dirPath: String, maxDataFileLength: Int = 1 << 30) = {
-    this(new File(dirPath), maxDataFileLength)
+  def this(dirPath: String) = {
+    this(new File(dirPath))
   }
 
-  def offer(buf: Array[Byte]): Unit = {
+  def offer(buf: Array[Byte]): Boolean = {
     if (writeDataFile.available(buf) <= 0) {
       rotateWriteFile()
     }
     val delta = writeDataFile.write(buf)
     idxFile.forwardReadPos(delta)
     idxFile.incrementSize()
+    true
   }
 
   def peek(): Option[Array[Byte]] = {
@@ -60,8 +62,14 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 30) {
     }
   }
 
+  def size(): Long = idxFile.size()
+
+
   def clear(): Unit = {
-    // todo
+    // 清空
+//    idxFile.clear()
+//    initDataFiles()
+    throw new UnsupportedOperationException()
   }
 
   def close(): Unit = {
@@ -70,12 +78,23 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 30) {
     idxFile.close()
   }
 
-  def rotateWriteFile(): Unit = {
-
+  private def initDataFiles(): Unit = {
+    readDataFile = new ReadDataFile(dir, idxFile.readIdx, maxDataFileLength)
+    readDataFile.readPos = idxFile.readPos
+    writeDataFile = new WriteDataFile(dir, idxFile.writeIdx, maxDataFileLength)
+    writeDataFile.writePos = idxFile.writePos
   }
 
-  def rotateReadFile(): Unit = {
+  private def rotateReadFile(): Unit = {
+    val newIndex = readDataFile.index + 1
+    readDataFile.close()
+    readDataFile = new ReadDataFile(dir, newIndex, maxDataFileLength)
+  }
 
+  private def rotateWriteFile(): Unit = {
+    val newIndex = writeDataFile.index + 1
+    writeDataFile.close()
+    writeDataFile = new WriteDataFile(dir, newIndex, maxDataFileLength)
   }
 
 }
