@@ -1,7 +1,7 @@
 package com.github.cgdon.sfqueue.core
 
 import java.io.{ File, FilenameFilter }
-import java.util.concurrent.{ ExecutorService, Executors, LinkedBlockingQueue }
+import java.util.concurrent.{ ExecutorService, Executors }
 
 import com.github.cgdon.sfqueue.file._
 import com.github.cgdon.sfqueue.util.Utils._
@@ -10,17 +10,16 @@ import com.github.cgdon.sfqueue.util.Utils._
   * 线程非安全
   * Created by 成国栋 on 2017-11-11 00:26:00.
   */
-class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
-
-  val pool: ExecutorService = Executors.newSingleThreadExecutor()
-
-  var readHandler: ReadDataFile = _
-  var writeHandler: WriteDataFile = _
+class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
 
   dir.mkdirs()
+
   // 初始化索引文件和待处理的数据文件
   val idxFile = new IndexFile(dir)
-  initDataFiles()
+  var readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
+  var writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
+
+  lazy val pool: ExecutorService = Executors.newSingleThreadExecutor()
 
   def this(dirPath: String) = {
     this(new File(dirPath))
@@ -44,7 +43,7 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
         // 当前文件还没有读完
         Some(f())
       } else {
-        // 当前文件已经读完了，滚动到下一个文件，继续读
+        // 当前文件已经读完了，滚动到下一个文件继续操作
         rotateReadFile()
         Some(f())
       }
@@ -69,6 +68,9 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
     bufOpt
   }
 
+  /**
+    * 移除队列下一个元素
+    */
   def remove(): Unit = {
     runHandler(() => {
       val len = readHandler.remove()
@@ -76,16 +78,26 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
     })
   }
 
+  /**
+    * 获取队列数据条数
+    *
+    * @return
+    */
   def size(): Long = idxFile.size()
 
   /**
     * 清空文件队列
     */
   def clear(): Unit = {
-    // 清空
-    //    idxFile.clear()
-    //    initDataFiles()
-    throw new UnsupportedOperationException()
+    idxFile.clear()
+
+    readHandler.close()
+    writeHandler.close()
+
+    cleanAllDataFile()
+
+    readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
   }
 
   /**
@@ -99,11 +111,6 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
     cleanFile()
   }
 
-  private def initDataFiles(): Unit = {
-    readHandler = new ReadDataFile(dir, idxFile.readIdx, maxDataFileLength)
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, maxDataFileLength)
-  }
-
   private def rotateReadFile(): Unit = {
     idxFile.readIdx += 1
     idxFile.resetReadPos()
@@ -113,7 +120,7 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
         readHandler.datFile.delete()
       }
     })
-    readHandler = new ReadDataFile(dir, idxFile.readIdx, maxDataFileLength)
+    readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
   }
 
   private def rotateWriteFile(): Unit = {
@@ -123,20 +130,28 @@ class SFQueue(dir: File, maxDataFileLength: Int = 1 << 21) {
     // 关闭旧的 write handler
     writeHandler.close()
 
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, maxDataFileLength)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
+  }
+
+  val datFilter = new FilenameFilter {
+    override def accept(dir: File, name: String): Boolean = DataFile.isDataFile(name)
   }
 
   /**
     * 清理已经读取完的文件
     */
   def cleanFile(): Unit = {
-    val filter = new FilenameFilter {
-      override def accept(dir: File, name: String): Boolean = DataFile.isDataFile(name)
-    }
-    dir.listFiles(filter).foreach { f =>
+    dir.listFiles(datFilter).foreach { f =>
       val index = DataFile.getIndexByFileName(f.getName)
       if (index < idxFile.readIdx) f.delete()
     }
+  }
+
+  /**
+    * 清理所有数据文件
+    */
+  def cleanAllDataFile(): Unit = {
+    dir.listFiles(datFilter).foreach(_.delete())
   }
 
 

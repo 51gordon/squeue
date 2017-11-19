@@ -9,12 +9,12 @@ import scala.util.matching.Regex
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
-class DataFile(val dir: File, val index: Int, initMaxLength: Int) extends QueueFile {
+class DataFile(val dir: File, val index: Int, dataFileSizeMb: Int) extends QueueFile {
 
   var endPos: Int = DATA_HEADER_LENGTH
 
   val datFile = new File(dir, getFileName(index))
-  init(datFile, initMaxLength)
+  init(datFile, dataFileSizeMb * (1 << 20))
 
   override def magic(): String = "sfquedat"
 

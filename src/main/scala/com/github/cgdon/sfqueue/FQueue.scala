@@ -1,7 +1,6 @@
 package com.github.cgdon.sfqueue
 
-import java.util
-import java.util.AbstractList
+import java.io.File
 import java.util.concurrent.locks.{ Lock, ReentrantReadWriteLock }
 
 import com.github.cgdon.sfqueue.core.SFQueue
@@ -9,9 +8,13 @@ import com.github.cgdon.sfqueue.core.SFQueue
 /**
   * Created by 成国栋 on 2017-11-11 00:22:00.
   */
-class FQueue(val dirPath: String) extends util.AbstractQueue[Array[Byte]] {
+class FQueue(val dir: File, val dataFileSizeMb: Int = 2) extends java.util.AbstractQueue[Array[Byte]] with AutoCloseable {
 
-  private val queue = new SFQueue(dirPath)
+  def this(dirPath: String, dataFileSizeMb: Int) {
+    this(new File(dirPath), dataFileSizeMb)
+  }
+
+  private val queue = new SFQueue(dir, dataFileSizeMb)
 
   private val lock: Lock = new ReentrantReadWriteLock().writeLock()
 
@@ -47,5 +50,9 @@ class FQueue(val dirPath: String) extends util.AbstractQueue[Array[Byte]] {
     } finally {
       lock.unlock()
     }
+  }
+
+  override def close(): Unit = {
+    lockRun(() => queue.close())
   }
 }

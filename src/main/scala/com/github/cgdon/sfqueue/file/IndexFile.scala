@@ -16,8 +16,8 @@ class IndexFile(parent: File) extends QueueFile {
   var writeIdx: Int = -1
   var writePos: Int = -1
   val queueSize = new AtomicLong(0)
-  val totalInRecord = new AtomicLong(0)
-  val totalOutRecord = new AtomicLong(0)
+  var totalInRecord: Long = 0
+  var totalOutRecord: Long = 0
 
   private val idxFile = new File(parent, IndexFile.INDEX_FILE_NAME)
   init(idxFile, IndexFile.INDEX_LIMIT_LENGTH)
@@ -28,6 +28,7 @@ class IndexFile(parent: File) extends QueueFile {
     * 初始化文件
     */
   override def initFile(): Unit = {
+    mbBuffer.position(0)
     mbBuffer.put(magic().getBytes(MAGIC_CHARSET))
     mbBuffer.putInt(version)
     mbBuffer.putInt(1) // put read index(start:12)
@@ -124,7 +125,7 @@ class IndexFile(parent: File) extends QueueFile {
     forwardWritePos(4 + msgLen)
 
     // 总的in数据条数+1
-    totalInRecord.incrementAndGet()
+    totalInRecord += 1
   }
 
   def decrementSize(bufLen: Int): Unit = {
@@ -135,7 +136,7 @@ class IndexFile(parent: File) extends QueueFile {
     forwardReadPos(4 + bufLen)
 
     // 总的out数据条数+1
-    totalOutRecord.incrementAndGet()
+    totalOutRecord += 1
   }
 
   /**
@@ -154,6 +155,7 @@ class IndexFile(parent: File) extends QueueFile {
     mbBuffer.clear()
     mbBuffer.force()
     initFile()
+    loadFile()
   }
 }
 

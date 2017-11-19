@@ -5,7 +5,7 @@ import java.io.File
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
-class ReadDataFile(dir: File, index: Int, initMaxLength: Int) extends DataFile(dir, index, initMaxLength) {
+class ReadDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile(dir, index, dataFileSizeMb) {
 
   var pos: Int = DATA_HEADER_LENGTH
 
