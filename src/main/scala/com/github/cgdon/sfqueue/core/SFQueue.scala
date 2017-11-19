@@ -17,7 +17,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
   // 初始化索引文件和待处理的数据文件
   val idxFile = new IndexFile(dir)
   var readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
-  var writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
+  var writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
 
   lazy val pool: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -52,16 +52,16 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
     }
   }
 
-  def readNext(): Option[Array[Byte]] = {
-    runHandler(() => readHandler.readNext())
+  def readNext(commit: Boolean): Option[Array[Byte]] = {
+    runHandler(() => readHandler.readNext(commit))
   }
 
   def peek(): Option[Array[Byte]] = {
-    readNext()
+    readNext(false)
   }
 
   def poll(): Option[Array[Byte]] = {
-    val bufOpt = readNext()
+    val bufOpt = readNext(true)
     if (bufOpt.isDefined) {
       idxFile.decrementSize(bufOpt.get.length)
     }
@@ -97,7 +97,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
     cleanAllDataFile()
 
     readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
   }
 
   /**
@@ -130,17 +130,17 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
     // 关闭旧的 write handler
     writeHandler.close()
 
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
   }
 
-  val datFilter = new FilenameFilter {
+  private val datFilter = new FilenameFilter {
     override def accept(dir: File, name: String): Boolean = DataFile.isDataFile(name)
   }
 
   /**
     * 清理已经读取完的文件
     */
-  def cleanFile(): Unit = {
+  private def cleanFile(): Unit = {
     dir.listFiles(datFilter).foreach { f =>
       val index = DataFile.getIndexByFileName(f.getName)
       if (index < idxFile.readIdx) f.delete()
@@ -150,7 +150,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
   /**
     * 清理所有数据文件
     */
-  def cleanAllDataFile(): Unit = {
+  private def cleanAllDataFile(): Unit = {
     dir.listFiles(datFilter).foreach(_.delete())
   }
 

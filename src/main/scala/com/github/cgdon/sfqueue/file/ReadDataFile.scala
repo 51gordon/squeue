@@ -14,11 +14,12 @@ class ReadDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile(
     *
     * @return
     */
-  def readNext(): Array[Byte] = {
+  def readNext(commit: Boolean): Array[Byte] = {
     mbBuffer.position(pos)
     val len = mbBuffer.getInt
     val buf = new Array[Byte](len)
     mbBuffer.get(buf)
+    if (commit) pos += 4 + len
     buf
   }
 

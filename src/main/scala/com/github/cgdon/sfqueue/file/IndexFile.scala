@@ -29,8 +29,8 @@ class IndexFile(parent: File) extends QueueFile {
     */
   override def initFile(): Unit = {
     mbBuffer.position(0)
-    mbBuffer.put(magic().getBytes(MAGIC_CHARSET))
-    mbBuffer.putInt(version)
+    mbBuffer.put(magic().getBytes(MAGIC_CHARSET)) // magic(start:0)
+    mbBuffer.putInt(version) // version(start:8)
     mbBuffer.putInt(1) // put read index(start:12)
     mbBuffer.putInt(DATA_HEADER_LENGTH) // put read pos(start:16)
     mbBuffer.putInt(1) // put write index(start:20)

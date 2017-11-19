@@ -1,17 +1,16 @@
 package com.github.cgdon.sfqueue.file
 
 import java.io.File
-import java.util.concurrent.{ ExecutorService, Executors, TimeUnit }
+import java.util.concurrent.{ ExecutorService, Executors, ThreadFactory }
+
 import com.github.cgdon.sfqueue.util.Utils._
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
-class WriteDataFile(dir: File, index: Int, initMaxLength: Int) extends DataFile(dir, index, initMaxLength) {
+class WriteDataFile(dir: File, index: Int, writePos: Option[Int], dataFileSizeMb: Int) extends DataFile(dir, index, dataFileSizeMb) {
 
-  import java.util.concurrent.ThreadFactory
-
-  var pos: Int = DATA_HEADER_LENGTH
+  var pos: Int = writePos.getOrElse(DATA_HEADER_LENGTH)
 
   @volatile var shouldClose = false
 

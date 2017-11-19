@@ -20,7 +20,7 @@ class FQueue(val dir: File, val dataFileSizeMb: Int = 2) extends java.util.Abstr
 
   override def iterator() = throw new UnsupportedOperationException
 
-  override def size() = {
+  override def size(): Int = {
     val longSize = queue.size()
     if (longSize > Int.MaxValue) {
       throw new IllegalStateException("Size is too large, use longSize() instead!")
@@ -28,18 +28,18 @@ class FQueue(val dir: File, val dataFileSizeMb: Int = 2) extends java.util.Abstr
     longSize.toInt
   }
 
-  def longSize = queue.size()
+  def longSize: Long = queue.size()
 
   override def poll(): Array[Byte] = {
     lockRun(() => queue.poll().orNull)
   }
 
-  override def offer(buf: Array[Byte]) = {
+  override def offer(buf: Array[Byte]): Boolean = {
     lockRun[Unit](() => queue.add(buf))
     true
   }
 
-  override def peek() = {
+  override def peek(): Array[Byte] = {
     lockRun(() => queue.peek().orNull)
   }
 

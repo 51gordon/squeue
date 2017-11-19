@@ -162,4 +162,13 @@ class SFQueueTest extends FunSuite with BeforeAndAfter {
     assert(queue.size() === 0)
   }
 
+  test("add multi test") {
+    queue.add("a".getBytes())
+    queue.add("b".getBytes())
+    queue.add("c".getBytes())
+
+    assert(new String(queue.poll().get) === "a")
+    assert(new String(queue.poll().get) === "b")
+    assert(new String(queue.poll().get) === "c")
+  }
 }
