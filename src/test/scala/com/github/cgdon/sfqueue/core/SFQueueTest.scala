@@ -9,7 +9,7 @@ import org.scalatest.{ BeforeAndAfter, FunSuite }
 @RunWith(classOf[JUnitRunner])
 class SFQueueTest extends FunSuite with BeforeAndAfter {
 
-  val rootDirPath: String = sys.props("java.io.tmpdir") + "sfqueue-maven"
+  val rootDirPath: String = sys.props("java.io.tmpdir") + "sfqueue"
   var queue: SFQueue = _
 
   before {

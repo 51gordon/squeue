@@ -8,7 +8,7 @@ import org.scalatest.{ BeforeAndAfter, FunSuite }
 
 class FQueueTest extends FunSuite with BeforeAndAfter {
 
-  val rootDirPath: String = sys.props("java.io.tmpdir") + "sfqueue-maven"
+  val rootDirPath: String = sys.props("java.io.tmpdir") + "sfqueue"
   var queue: FQueue = _
 
   before {
@@ -25,7 +25,7 @@ class FQueueTest extends FunSuite with BeforeAndAfter {
 
   test("daemon test") {
     val start = System.currentTimeMillis()
-    val len = 10000 * 100
+    val len = 10000 * 10
     val seed = ("a" * 1024).getBytes()
     val pool = Executors.newFixedThreadPool(2)
     pool.submit(new Runnable {

@@ -8,9 +8,9 @@ import com.github.cgdon.sfqueue.util.Utils._
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
-class WriteDataFile(dir: File, index: Int, writePos: Option[Int], dataFileSizeMb: Int) extends DataFile(dir, index, dataFileSizeMb) {
+class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile(dir, index, dataFileSizeMb) {
 
-  var pos: Int = writePos.getOrElse(DATA_HEADER_LENGTH)
+  var pos: Int = readEndPos()
 
   @volatile var shouldClose = false
 

@@ -17,7 +17,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
   // 初始化索引文件和待处理的数据文件
   val idxFile = new IndexFile(dir)
   var readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
-  var writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
+  var writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
 
   lazy val pool: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -97,7 +97,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
     cleanAllDataFile()
 
     readHandler = new ReadDataFile(dir, idxFile.readIdx, dataFileSizeMb)
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
   }
 
   /**
@@ -130,7 +130,7 @@ class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
     // 关闭旧的 write handler
     writeHandler.close()
 
-    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, None, dataFileSizeMb)
+    writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
   }
 
   private val datFilter = new FilenameFilter {
