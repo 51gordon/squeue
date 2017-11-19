@@ -1,4 +1,4 @@
-### Introduction 
+### 简介 
 
 SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储的嵌入式队列消息系统(Scala Fast Queue)，采用Scala语言开发，可以与Java程序无缝集成。
 
@@ -44,7 +44,7 @@ SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储�
         val pollData = new String(queue.poll())
         println(s"poll data: $pollData")
       
-        // 移除队列数据
+        // 移除队列一条数据
         val removeData = new String(queue.remove())
         println(s"remove data: $removeData")
       
@@ -86,7 +86,7 @@ SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储�
           String pollData = new String(queue.poll());
           System.out.println("poll data: " + pollData);
       
-          // 移除队列数据
+          // 移除队列一条数据
           String removeData = new String(queue.remove());
           System.out.println("remove data: " + removeData);
       
