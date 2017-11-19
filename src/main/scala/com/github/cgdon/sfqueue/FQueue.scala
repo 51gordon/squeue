@@ -1,6 +1,7 @@
 package com.github.cgdon.sfqueue
 
 import java.util
+import java.util.AbstractList
 import java.util.concurrent.locks.{ Lock, ReentrantReadWriteLock }
 
 import com.github.cgdon.sfqueue.core.SFQueue
@@ -31,7 +32,7 @@ class FQueue(val dirPath: String) extends util.AbstractQueue[Array[Byte]] {
   }
 
   override def offer(buf: Array[Byte]) = {
-    lockRun[Unit](() => queue.offer(buf))
+    lockRun[Unit](() => queue.add(buf))
     true
   }
 

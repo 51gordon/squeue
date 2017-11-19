@@ -45,9 +45,6 @@ trait QueueFile extends AutoCloseable {
   }
 
   /**
-    */
-
-  /**
     *
     * 初始化内存文件映射相关对象
     *
@@ -81,12 +78,12 @@ trait QueueFile extends AutoCloseable {
   /**
     * 从空文件初始化为相应格式的文件
     */
-  def initFile(): Unit
+  protected def initFile(): Unit
 
   /**
     * 加载文件到内存
     */
-  def loadFile(): Unit
+  protected def loadFile(): Unit
 
   /**
     * 关闭文件资源

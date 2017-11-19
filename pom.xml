@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.github.cgdon</groupId>
-    <artifactId>fqueue</artifactId>
+    <artifactId>sfqueue</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
@@ -32,9 +32,9 @@
     </licenses>
     <scm>
         <tag>master</tag>
-        <url>https://github.com/cgdon/fqueue</url>
-        <connection>scm:git:https://github.com/cgdon/fqueue.git</connection>
-        <developerConnection>scm:git:https://github.com/cgdon/fqueue.git</developerConnection>
+        <url>https://github.com/cgdon/sfqueue</url>
+        <connection>scm:git:https://github.com/cgdon/sfqueue.git</connection>
+        <developerConnection>scm:git:https://github.com/cgdon/sfqueue.git</developerConnection>
     </scm>
     <developers>
         <developer>
@@ -66,8 +66,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.0</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>

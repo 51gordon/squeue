@@ -2,40 +2,66 @@ package com.github.cgdon.sfqueue.file
 
 import java.io.File
 import java.util.concurrent.{ ExecutorService, Executors, TimeUnit }
+import com.github.cgdon.sfqueue.util.Utils._
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
   */
 class WriteDataFile(dir: File, index: Int, initMaxLength: Int) extends DataFile(dir, index, initMaxLength) {
 
-  var writePos: Int = DATA_HEADER_LENGTH
+  import java.util.concurrent.ThreadFactory
 
-  // 没10ms自动flush
-  val pool: ExecutorService = Executors.newFixedThreadPool(1)
+  var pos: Int = DATA_HEADER_LENGTH
+
+  @volatile var shouldClose = false
+
+  // 每隔一段时间自动flush
+  val pool: ExecutorService = Executors.newSingleThreadExecutor(new ThreadFactory {
+    override def newThread(r: Runnable): Thread = new Thread(r, "DataFileForceThread")
+  })
   pool.submit(new Runnable {
     override def run(): Unit = {
-      while (true) {
+      while (!shouldClose) {
         mbBuffer.force()
       }
     }
   })
 
-  def available(buf: Array[Byte]): Int = {
-    FILE_LIMIT - (writePos + 4 + buf.length)
+  /**
+    * 是否已写满
+    *
+    * @param bufLen 数据字节数
+    * @return
+    */
+  def isFull(bufLen: Int): Boolean = {
+    (pos + 4 + bufLen) >= FILE_LIMIT
   }
 
-  def write(buf: Array[Byte]): Int = {
-    val delta = 4 + buf.length
-    mbBuffer.position(writePos)
+  /**
+    * 写数据
+    *
+    * @param buf
+    */
+  def write(buf: Array[Byte]): Unit = {
+    // 写数据
+    mbBuffer.position(pos)
     mbBuffer.putInt(buf.length)
     mbBuffer.put(buf)
-    writePos += delta
-    delta
+    pos += (4 + buf.length)
   }
 
+  /**
+    * 关闭资源
+    */
   override def close(): Unit = {
-    pool.shutdown()
-    pool.awaitTermination(10, TimeUnit.SECONDS)
+    // 设置close标志位
+    shouldClose = true
+
+    // 关闭force线程池
+    closePool(pool)
+
+    writeEndPos(pos)
+
     super.close()
   }
 }
