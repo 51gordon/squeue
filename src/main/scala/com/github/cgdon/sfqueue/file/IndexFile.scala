@@ -27,7 +27,7 @@ class IndexFile(parent: File) extends QueueFile {
   /**
     * 初始化文件
     */
-  override def initFile(): Unit = {
+  override def createFile(): Unit = {
     mbBuffer.position(0)
     mbBuffer.put(magic().getBytes(MAGIC_CHARSET)) // magic(start:0)
     mbBuffer.putInt(version) // version(start:8)
@@ -154,7 +154,7 @@ class IndexFile(parent: File) extends QueueFile {
   def clear(): Unit = {
     mbBuffer.clear()
     mbBuffer.force()
-    initFile()
+    createFile()
     loadFile()
   }
 }

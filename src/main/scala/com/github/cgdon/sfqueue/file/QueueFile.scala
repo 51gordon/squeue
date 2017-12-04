@@ -35,7 +35,7 @@ trait QueueFile extends AutoCloseable {
       f.createNewFile()
       initMemoryMapFile(f, initMaxLength)
       // 初始化文件
-      initFile()
+      createFile()
     } else {
       initMemoryMapFile(f, initMaxLength)
     }
@@ -78,7 +78,7 @@ trait QueueFile extends AutoCloseable {
   /**
     * 从空文件初始化为相应格式的文件
     */
-  protected def initFile(): Unit
+  protected def createFile(): Unit
 
   /**
     * 加载文件到内存

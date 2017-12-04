@@ -18,7 +18,7 @@ class DataFile(val dir: File, val index: Int, dataFileSizeMb: Int) extends Queue
 
   override def magic(): String = "sfquedat"
 
-  override def initFile(): Unit = {
+  override def createFile(): Unit = {
     mbBuffer.put(magic().getBytes(MAGIC_CHARSET)) // put magic(start: 0)
     mbBuffer.putInt(version) // put version(start:8)
     mbBuffer.putInt(endPos) // put recordNum(start:12)
