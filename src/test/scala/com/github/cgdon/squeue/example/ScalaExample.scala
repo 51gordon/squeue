@@ -1,6 +1,6 @@
-package com.github.cgdon.sfqueue.example
+package com.github.cgdon.squeue.example
 
-import com.github.cgdon.sfqueue.FQueue
+import com.github.cgdon.squeue.FQueue
 
 object ScalaExample extends App {
 

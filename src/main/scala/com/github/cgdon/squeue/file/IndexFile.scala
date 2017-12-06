@@ -1,9 +1,9 @@
-package com.github.cgdon.sfqueue.file
+package com.github.cgdon.squeue.file
 
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
-import com.github.cgdon.sfqueue.ex.SFQueueException
+import com.github.cgdon.squeue.ex.SFQueueException
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.

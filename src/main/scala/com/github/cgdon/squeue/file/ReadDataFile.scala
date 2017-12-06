@@ -1,4 +1,4 @@
-package com.github.cgdon.sfqueue.file
+package com.github.cgdon.squeue.file
 
 import java.io.File
 

@@ -1,9 +1,9 @@
-package com.github.cgdon.sfqueue
+package com.github.cgdon.squeue
 
 import java.io.File
 import java.util.concurrent.locks.{ Lock, ReentrantReadWriteLock }
 
-import com.github.cgdon.sfqueue.core.SFQueue
+import com.github.cgdon.squeue.core.SFQueue
 
 /**
   * Created by 成国栋 on 2017-11-11 00:22:00.

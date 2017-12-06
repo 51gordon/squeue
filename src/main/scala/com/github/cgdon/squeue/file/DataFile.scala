@@ -1,8 +1,8 @@
-package com.github.cgdon.sfqueue.file
+package com.github.cgdon.squeue.file
 
 import java.io.File
 
-import com.github.cgdon.sfqueue.ex.SFQueueException
+import com.github.cgdon.squeue.ex.SFQueueException
 
 import scala.util.matching.Regex
 
@@ -57,7 +57,7 @@ object DataFile {
     capturePattern.findFirstMatchIn(name) match {
       case Some(a) => a.group(1).toInt
       case None =>
-        throw SFQueueException(s"Invalid sfqueue data file name: $name")
+        throw SFQueueException(s"Invalid squeue data file name: $name")
     }
   }
 

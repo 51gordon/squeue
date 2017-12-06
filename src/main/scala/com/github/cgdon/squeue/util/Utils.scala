@@ -1,4 +1,4 @@
-package com.github.cgdon.sfqueue.util
+package com.github.cgdon.squeue.util
 
 import java.util.concurrent.{ ExecutorService, TimeUnit }
 

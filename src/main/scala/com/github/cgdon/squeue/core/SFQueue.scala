@@ -1,10 +1,10 @@
-package com.github.cgdon.sfqueue.core
+package com.github.cgdon.squeue.core
 
 import java.io.{ File, FilenameFilter }
 import java.util.concurrent.{ ExecutorService, Executors }
 
-import com.github.cgdon.sfqueue.file._
-import com.github.cgdon.sfqueue.util.Utils._
+import com.github.cgdon.squeue.file._
+import com.github.cgdon.squeue.util.Utils._
 
 /**
   * 线程非安全

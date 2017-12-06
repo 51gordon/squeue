@@ -1,11 +1,11 @@
-package com.github.cgdon.sfqueue.file
+package com.github.cgdon.squeue.file
 
 import java.io.{ File, RandomAccessFile }
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileChannel.MapMode
 
-import com.github.cgdon.sfqueue.ex.SFQueueException
+import com.github.cgdon.squeue.ex.SFQueueException
 
 /**
   * queue文件接口

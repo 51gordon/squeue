@@ -1,4 +1,4 @@
-package com.github.cgdon.sfqueue.core
+package com.github.cgdon.squeue.core
 
 import java.io.File
 
@@ -9,7 +9,7 @@ import org.scalatest.{ BeforeAndAfter, FunSuite }
 @RunWith(classOf[JUnitRunner])
 class SFQueueTest extends FunSuite with BeforeAndAfter {
 
-  val rootDirPath: String = sys.props("java.io.tmpdir") + "sfqueue"
+  val rootDirPath: String = sys.props("java.io.tmpdir") + "squeue"
   var queue: SFQueue = _
 
   before {

@@ -17,9 +17,9 @@ SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储�
 ###  例子 
   Scala:
   ```
-      package com.github.cgdon.sfqueue.example
+      package com.github.cgdon.squeue.example
       
-      import com.github.cgdon.sfqueue.FQueue
+      import com.github.cgdon.squeue.FQueue
       
       object ScalaExample extends App {
       
@@ -59,9 +59,9 @@ SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储�
    
    Java
    ```
-      package com.github.cgdon.sfqueue.example;
+      package com.github.cgdon.squeue.example;
       
-      import com.github.cgdon.sfqueue.FQueue;
+      import com.github.cgdon.squeue.FQueue;
       
       public class JavaExample {
         public static void main(String[] args) {

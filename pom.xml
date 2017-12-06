@@ -19,7 +19,7 @@
     </properties>
 
     <groupId>com.github.cgdon</groupId>
-    <artifactId>sfqueue</artifactId>
+    <artifactId>squeue</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
@@ -58,9 +58,9 @@
     </licenses>
     <scm>
         <tag>master</tag>
-        <url>https://github.com/cgdon/sfqueue</url>
-        <connection>scm:git:https://github.com/cgdon/sfqueue.git</connection>
-        <developerConnection>scm:git:https://github.com/cgdon/sfqueue.git</developerConnection>
+        <url>https://github.com/cgdon/squeue</url>
+        <connection>scm:git:https://github.com/cgdon/squeue.git</connection>
+        <developerConnection>scm:git:https://github.com/cgdon/squeue.git</developerConnection>
     </scm>
     <developers>
         <developer>

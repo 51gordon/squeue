@@ -1,9 +1,9 @@
-package com.github.cgdon.sfqueue.file
+package com.github.cgdon.squeue.file
 
 import java.io.File
 import java.util.concurrent.{ ExecutorService, Executors, ThreadFactory }
 
-import com.github.cgdon.sfqueue.util.Utils._
+import com.github.cgdon.squeue.util.Utils._
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
