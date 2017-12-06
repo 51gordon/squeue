@@ -10,7 +10,7 @@ import com.github.cgdon.squeue.util.Utils._
   * 线程非安全
   * Created by 成国栋 on 2017-11-11 00:26:00.
   */
-class SFQueue(dir: File, dataFileSizeMb: Int = 2) {
+class SQueue(dir: File, dataFileSizeMb: Int = 2) {
 
   dir.mkdirs()
 

@@ -7,17 +7,17 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{ BeforeAndAfter, FunSuite }
 
 @RunWith(classOf[JUnitRunner])
-class SFQueueTest extends FunSuite with BeforeAndAfter {
+class SQueueTest extends FunSuite with BeforeAndAfter {
 
   val rootDirPath: String = sys.props("java.io.tmpdir") + "squeue"
-  var queue: SFQueue = _
+  var queue: SQueue = _
 
   before {
     val rootDir = new File(rootDirPath)
     rootDir.mkdirs()
     println(s"rootDirPath: $rootDirPath")
     rootDir.listFiles().foreach(_.delete())
-    queue = new SFQueue(rootDir)
+    queue = new SQueue(rootDir)
   }
 
   after {

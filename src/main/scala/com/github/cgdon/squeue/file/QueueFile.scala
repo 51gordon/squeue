@@ -5,7 +5,7 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileChannel.MapMode
 
-import com.github.cgdon.squeue.ex.SFQueueException
+import com.github.cgdon.squeue.ex.QueueException
 
 /**
   * queue文件接口
@@ -70,7 +70,7 @@ trait QueueFile extends AutoCloseable {
     mbBuffer.get(magicBuf)
     val _magic = new String(magicBuf)
     if (_magic != magic()) {
-      throw SFQueueException("Index file format error, magic incorrect!")
+      throw QueueException("Index file format error, magic incorrect!")
     }
     _magic
   }

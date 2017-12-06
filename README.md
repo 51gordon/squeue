@@ -1,6 +1,6 @@
 ### 简介 
 
-SFQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储的嵌入式队列消息系统(Scala Fast Queue)，采用Scala语言开发，可以与Java程序无缝集成。
+SQueue是FQueue的scala版本，是一个高性能、基于磁盘持久存储的嵌入式队列消息系统(Scala Fast Queue)，采用Scala语言开发，可以与Java程序无缝集成。
 
 
 ### 特性 

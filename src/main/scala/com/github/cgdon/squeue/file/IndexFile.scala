@@ -3,7 +3,7 @@ package com.github.cgdon.squeue.file
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
-import com.github.cgdon.squeue.ex.SFQueueException
+import com.github.cgdon.squeue.ex.QueueException
 
 /**
   * Created by 成国栋 on 2017-11-11 00:34:00.
@@ -45,7 +45,7 @@ class IndexFile(parent: File) extends QueueFile {
     */
   override def loadFile(): Unit = {
     if (raFile.length() < IndexFile.INDEX_LIMIT_LENGTH) {
-      throw SFQueueException("Index file format error, length incorrect!")
+      throw QueueException("Index file format error, length incorrect!")
     }
     mbBuffer.position(0)
     readMagic()

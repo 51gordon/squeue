@@ -3,7 +3,7 @@ package com.github.cgdon.squeue
 import java.io.File
 import java.util.concurrent.locks.{ Lock, ReentrantReadWriteLock }
 
-import com.github.cgdon.squeue.core.SFQueue
+import com.github.cgdon.squeue.core.SQueue
 
 /**
   * Created by 成国栋 on 2017-11-11 00:22:00.
@@ -14,7 +14,7 @@ class FQueue(val dir: File, val dataFileSizeMb: Int = 2) extends java.util.Abstr
     this(new File(dirPath), dataFileSizeMb)
   }
 
-  private val queue = new SFQueue(dir, dataFileSizeMb)
+  private val queue = new SQueue(dir, dataFileSizeMb)
 
   private val lock: Lock = new ReentrantReadWriteLock().writeLock()
 
