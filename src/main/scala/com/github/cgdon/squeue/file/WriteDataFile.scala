@@ -49,6 +49,21 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
     pos += (4 + buf.length)
   }
 
+//  /**
+//    * 写数据
+//    *
+//    * @param bufList
+//    */
+//  def write(bufList: Array[Array[Byte]]): Unit = {
+//    // 写数据
+//    mbBuffer.position(pos)
+//    for (buf <- bufList) {
+//      mbBuffer.putInt(buf.length)
+//      mbBuffer.put(buf)
+//      pos += (4 + buf.length)
+//    }
+//  }
+
   /**
     * 关闭资源
     */

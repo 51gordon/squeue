@@ -1,27 +1,28 @@
 package com.github.cgdon.squeue.core
 
-import java.io.File
-
+import com.github.cgdon.squeue.QueueTestTrait
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{ BeforeAndAfter, FunSuite }
+import org.slf4j.LoggerFactory
 
 @RunWith(classOf[JUnitRunner])
-class SQueueTest extends FunSuite with BeforeAndAfter {
+class SQueueTest extends FunSuite with BeforeAndAfter with QueueTestTrait {
 
-  val rootDirPath: String = sys.props("java.io.tmpdir") + "squeue"
+  val logger = LoggerFactory.getLogger(classOf[SQueueTest])
+
   var queue: SQueue = _
 
   before {
-    val rootDir = new File(rootDirPath)
-    rootDir.mkdirs()
-    println(s"rootDirPath: $rootDirPath")
-    rootDir.listFiles().foreach(_.delete())
+    print("=" * 100 + "\n")
+    initQueueEnv()
     queue = new SQueue(rootDir)
+    logger.info(s"queue size: ${queue.size()}")
   }
 
   after {
     queue.close()
+    logger.info(s"queue closed")
   }
 
   test("queue init test") {
@@ -170,5 +171,66 @@ class SQueueTest extends FunSuite with BeforeAndAfter {
     assert(new String(queue.poll().get) === "a")
     assert(new String(queue.poll().get) === "b")
     assert(new String(queue.poll().get) === "c")
+    assert(queue.size() === 0)
+  }
+
+  test("add multi once test") {
+    queue.add(Array("a", "b", "c").map(_.getBytes()))
+    assert(new String(queue.poll().get) === "a")
+    assert(new String(queue.poll().get) === "b")
+    assert(new String(queue.poll().get) === "c")
+    assert(queue.size() === 0)
+  }
+
+  test("add 3 once, peek 3 once test") {
+    queue.add(Array("a", "b", "c").map(_.getBytes()))
+    assert(queue.peek(3).map(new String(_)).mkString === "abc")
+    assert(queue.size() === 3)
+  }
+
+  test("add 3 once, poll 3 once test") {
+    queue.add(Array("a", "b", "c").map(_.getBytes()))
+    assert(queue.poll(3).map(new String(_)).mkString === "abc")
+    assert(queue.size() === 0)
+  }
+
+  test("add 3 once, poll 2+1 once test") {
+    queue.add(Array("a", "b", "c").map(_.getBytes()))
+    assert(queue.poll(2).map(new String(_)).mkString === "ab")
+    assert(queue.size() === 1)
+    assert(queue.poll().map(new String(_)).mkString === "c")
+    assert(queue.size() === 0)
+  }
+
+  test("add 100 once, poll 10 * 10 once test") {
+    queue.add((0 until 100).toArray.map("a" + _).map(_.getBytes()))
+    for (i <- 0 until 10) {
+      logger.info("10 msg: " + queue.poll(10).map(new String(_)).mkString(","))
+      assert(queue.size() === 100 - (i + 1) * 10)
+    }
+  }
+
+  test("add 100 once, peek 10 * 10 once test") {
+    queue.add((0 until 100).toArray.map("a" + _).map(_.getBytes()))
+    for (i <- 0 until 10) {
+      val bufList = queue.peek(10)
+      logger.info("10 msg: " + bufList.map(new String(_)).mkString(","))
+      queue.remove(bufList.length)
+      assert(queue.size() === 100 - (i + 1) * 10)
+    }
+  }
+
+  test("add 10 once, peek 20 once test") {
+    queue.add((0 until 10).toArray.map("a" + _).map(_.getBytes()))
+    val bufList = queue.peek(20)
+    assert(bufList.length === 10)
+    assert(queue.size() === 10)
+  }
+
+  test("add 10 once, poll 20 once test") {
+    queue.add((0 until 10).toArray.map("a" + _).map(_.getBytes()))
+    val bufList = queue.poll(20)
+    assert(bufList.length === 10)
+    assert(queue.size() === 0)
   }
 }

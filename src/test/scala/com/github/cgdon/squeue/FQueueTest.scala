@@ -1,21 +1,15 @@
 package com.github.cgdon.squeue
 
-import java.io.File
 import java.util.concurrent.Executors
 
 import com.github.cgdon.squeue.util.Utils
 import org.scalatest.{ BeforeAndAfter, FunSuite }
 
-class FQueueTest extends FunSuite with BeforeAndAfter {
+class FQueueTest extends FunSuite with BeforeAndAfter with QueueTestTrait {
 
-  val rootDirPath: String = sys.props("java.io.tmpdir") + "squeue"
   var queue: FQueue = _
 
   before {
-    val rootDir = new File(rootDirPath)
-    rootDir.mkdirs()
-    println(s"rootDirPath: $rootDirPath")
-    rootDir.listFiles().foreach(_.delete())
     queue = new FQueue(rootDir, 512)
   }
 

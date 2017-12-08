@@ -118,25 +118,33 @@ class IndexFile(parent: File) extends QueueFile {
   }
 
   def incrementSize(msgLen: Int): Unit = {
-    // 队列数据条数+1
-    updateQueueSize(queueSize.incrementAndGet())
-
-    // 写位置+(4+bufLen)
-    forwardWritePos(4 + msgLen)
-
-    // 总的in数据条数+1
-    totalInRecord += 1
+    incrementSize(1, msgLen)
   }
 
-  def decrementSize(bufLen: Int): Unit = {
-    // 队列数据条数-1
-    updateQueueSize(queueSize.decrementAndGet())
+  def incrementSize(msgNum: Int, totalMsgLen: Int): Unit = {
+    // 队列数据条数 + msgNum
+    updateQueueSize(queueSize.addAndGet(msgNum))
 
-    // 读位置+(4+bufLen)
-    forwardReadPos(4 + bufLen)
+    // 写位置 + (4 * msgNum + totalMsgLen)
+    forwardWritePos(4 * msgNum + totalMsgLen)
+
+    // 总的in数据条数 + 1
+    totalInRecord += msgNum
+  }
+
+  def decrementSize(msgLen: Int): Unit = {
+    decrementSize(1, msgLen)
+  }
+
+  def decrementSize(msgNum: Int, totalMsgLen: Int): Unit = {
+    // 队列数据条数 - msgNum
+    updateQueueSize(queueSize.addAndGet(-msgNum))
+
+    // 读位置 + (4 * msgNum + totalMsgLen)
+    forwardReadPos(4 * msgNum + totalMsgLen)
 
     // 总的out数据条数+1
-    totalOutRecord += 1
+    totalOutRecord += msgNum
   }
 
   /**
