@@ -82,9 +82,9 @@
   </scm>
   <developers>
     <developer>
-      <name>Kael Chan</name>
+      <name>Kael Cheng</name>
       <email>cgdong08@gmail.com</email>
-      <organization>Kael Chan</organization>
+      <organization>Kael Cheng</organization>
     </developer>
   </developers>
 
@@ -148,7 +148,7 @@
         <configuration>
           <skipTests>true</skipTests>
           <!--<includes>-->
-            <!--<include>**/*Test.scala</include>-->
+          <!--<include>**/*Test.scala</include>-->
           <!--</includes>-->
         </configuration>
       </plugin>
@@ -158,7 +158,7 @@
         <artifactId>scalatest-maven-plugin</artifactId>
         <version>1.0</version>
         <!--<configuration>-->
-          <!--<skipTests>false</skipTests>-->
+        <!--<skipTests>false</skipTests>-->
         <!--</configuration>-->
         <executions>
           <execution>
