@@ -14,9 +14,9 @@ class DataFile(val dir: File, val index: Int, dataFileSizeMb: Int) extends Queue
   var endPos: Int = DATA_HEADER_LENGTH
 
   val datFile = new File(dir, getFileName(index))
-  init(datFile, dataFileSizeMb * (1 << 20))
+  init(datFile, dataFileSizeMb * (1 << 20) + DATA_HEADER_LENGTH + 4)
 
-  override def magic(): String = "sfquedat"
+  override def magic(): String = "sque_dat"
 
   override def createFile(): Unit = {
     mbBuffer.put(magic().getBytes(MAGIC_CHARSET)) // put magic(start: 0)
@@ -31,7 +31,7 @@ class DataFile(val dir: File, val index: Int, dataFileSizeMb: Int) extends Queue
     endPos = mbBuffer.getInt
   }
 
-  def readEndPos(): Int = {
+  def readEndPosFromFile(): Int = {
     mbBuffer.position(12)
     mbBuffer.getInt()
   }
@@ -39,7 +39,7 @@ class DataFile(val dir: File, val index: Int, dataFileSizeMb: Int) extends Queue
   /**
     * 读取writePos，写入到endPos
     */
-  def writeEndPos(endPos: Int): Unit = {
+  def writeEndPos2File(endPos: Int): Unit = {
     mbBuffer.position(12)
     mbBuffer.putInt(endPos)
   }

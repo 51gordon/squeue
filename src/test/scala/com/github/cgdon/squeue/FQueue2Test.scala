@@ -5,6 +5,7 @@ import org.scalatest.{ BeforeAndAfter, FunSuite }
 class FQueue2Test extends FunSuite with BeforeAndAfter with QueueTestTrait {
 
   before {
+    initQueueEnv()
     rootDir.listFiles().foreach(_.delete())
   }
 

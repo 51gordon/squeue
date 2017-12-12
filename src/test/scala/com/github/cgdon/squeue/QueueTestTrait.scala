@@ -8,7 +8,7 @@ trait QueueTestTrait {
 
   private val logger = LoggerFactory.getLogger(classOf[QueueTestTrait])
 
-  val rootDir = new File(sys.props("user.dir"), "squeue")
+  val rootDir = new File(sys.props("java.io.tmpdir"), "squeue")
 
   def initQueueEnv(): Unit = {
     rootDir.mkdirs()

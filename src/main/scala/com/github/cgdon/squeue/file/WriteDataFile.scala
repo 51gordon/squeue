@@ -10,7 +10,7 @@ import com.github.cgdon.squeue.util.Utils._
   */
 class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile(dir, index, dataFileSizeMb) {
 
-  var pos: Int = readEndPos()
+  var pos: Int = readEndPosFromFile()
 
   @volatile var shouldClose = false
 
@@ -29,12 +29,22 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
   /**
     * 是否已写满
     *
-    * @param bufLen 数据字节数
+    * @param buf 数据
     * @return
     */
-  def isFull(bufLen: Int): Boolean = {
-    (pos + 4 + bufLen) >= FILE_LIMIT
+  def isFull(buf: Array[Byte]): Boolean = {
+    (pos + 4 + buf.length) >= FILE_LIMIT
   }
+
+//  /**
+//    * 是否已写满
+//    *
+//    * @param bufList 数据
+//    * @return
+//    */
+//  def isFull(bufList: Array[Array[Byte]]): Boolean = {
+//    pos + bufList.map(4 + _.length).sum > FILE_LIMIT
+//  }
 
   /**
     * 写数据
@@ -49,20 +59,20 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
     pos += (4 + buf.length)
   }
 
-//  /**
-//    * 写数据
-//    *
-//    * @param bufList
-//    */
-//  def write(bufList: Array[Array[Byte]]): Unit = {
-//    // 写数据
-//    mbBuffer.position(pos)
-//    for (buf <- bufList) {
-//      mbBuffer.putInt(buf.length)
-//      mbBuffer.put(buf)
-//      pos += (4 + buf.length)
-//    }
-//  }
+  /**
+    * 写数据
+    *
+    * @param bufList
+    */
+  def write(bufList: Array[Array[Byte]]): Unit = {
+    // 写数据
+    mbBuffer.position(pos)
+    for (buf <- bufList) {
+      mbBuffer.putInt(buf.length)
+      mbBuffer.put(buf)
+    }
+    pos += bufList.map(4 + _.length).sum
+  }
 
   /**
     * 关闭资源
@@ -74,7 +84,7 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
     // 关闭force线程池
     closePool(pool)
 
-    writeEndPos(pos)
+    writeEndPos2File(pos)
 
     super.close()
   }

@@ -10,9 +10,15 @@ import com.github.cgdon.squeue.util.Utils._
   * 线程非安全
   * Created by 成国栋 on 2017-11-11 00:26:00.
   */
-class SQueue(dir: File, dataFileSizeMb: Int = 2) {
+class SQueue(dir: File, dataFileSizeMb: Int) {
 
-  dir.mkdirs()
+  (!dir.exists(), dir.isFile) match {
+    case (true, _) =>
+      throw new IllegalArgumentException(s"Directory $dir not exist!")
+    case (_, true) =>
+      throw new IllegalArgumentException(s"$dir not a directory!")
+    case (_, _) =>
+  }
 
   // 初始化索引文件和待处理的数据文件
   val idxFile = new IndexFile(dir)
@@ -21,44 +27,53 @@ class SQueue(dir: File, dataFileSizeMb: Int = 2) {
 
   lazy private val pool: ExecutorService = Executors.newSingleThreadExecutor()
 
-  def this(dirPath: String) = {
-    this(new File(dirPath))
+  def this(dirPath: String, dataFileSizeMb: Int) = {
+    this(new File(dirPath), dataFileSizeMb)
   }
 
+  def totalInNum() = idxFile.totalInRecordNum
+
+  def totalInSize() = idxFile.totalInRecordSize
+
+  def totalOutNum() = idxFile.totalOutRecordNum
+
+  def totalOutSize() = idxFile.totalOutRecordSize
+
   def add(buf: Array[Byte]): Unit = {
-    if (writeHandler.isFull(buf.length)) {
+    if (writeHandler.isFull(buf)) {
       rotateWriteFile()
     }
     writeHandler.write(buf)
     idxFile.incrementSize(buf.length)
   }
 
+  //  def add(bufList: Array[Array[Byte]]): Unit = {
+  //    if (writeHandler.isFull(bufList)) {
+  //      rotateWriteFile()
+  //    }
+  //    writeHandler.write(bufList)
+  //    idxFile.incrementSize(bufList.length, bufList.map(_.length).sum)
+  //  }
+
   def add(bufList: Array[Array[Byte]]): Unit = {
     for (buf <- bufList) {
-      if (writeHandler.isFull(buf.length)) {
+      if (writeHandler.isFull(buf)) {
         rotateWriteFile()
       }
       writeHandler.write(buf)
-      idxFile.incrementSize(buf.length)
     }
+    idxFile.incrementSize(bufList.length, bufList.map(_.length).sum)
   }
 
-  def runHandler[T](f: () => T): Option[T] = {
-    if (idxFile.readIdx == idxFile.writeIdx) {
-      // 读写同一个文件
-      if (idxFile.readPos < idxFile.writePos) Some(f()) else None
-    } else if (idxFile.readIdx < idxFile.writeIdx) {
-      // 读文件落后于写文件
-      if (idxFile.readPos < readHandler.readEndPos()) {
-        // 当前文件还没有读完
+  private def runHandler[T](f: () => T): Option[T] = {
+    idxFile.readIdx - idxFile.writeIdx match {
+      case delta: Int if delta == 0 => // 读写同一个文件
+        if (idxFile.readPos < idxFile.writePos) Some(f()) else None
+      case delta: Int if delta < 0 => // 读文件落后于写文件
+        if (idxFile.readPos >= readHandler.readEndPosFromFile()) rotateReadFile() // 如果当前文件已经读完，那么滚动到下一个文件继续读
         Some(f())
-      } else {
-        // 当前文件已经读完了，滚动到下一个文件继续操作
-        rotateReadFile()
-        Some(f())
-      }
-    } else {
-      throw new IllegalStateException("Read index > write index")
+      case delta: Int if delta > 0 => // 这种情况不可能出现
+        throw new IllegalStateException("Read index > write index, this is a bug!")
     }
   }
 
@@ -67,7 +82,6 @@ class SQueue(dir: File, dataFileSizeMb: Int = 2) {
   }
 
   private def readData(maxNum: Int, commit: Boolean): Array[Array[Byte]] = {
-    if (maxNum <= 0) throw new IllegalArgumentException("maxNum must > 0")
     size() match {
       case i if i == 0 => Array()
       case i if i > 0 =>
@@ -165,6 +179,8 @@ class SQueue(dir: File, dataFileSizeMb: Int = 2) {
     writeHandler = new WriteDataFile(dir, idxFile.writeIdx, dataFileSizeMb)
   }
 
+  def clearStatData() = idxFile.clearStatData()
+
   /**
     * 关闭文件队列
     */
@@ -218,6 +234,4 @@ class SQueue(dir: File, dataFileSizeMb: Int = 2) {
   private def cleanAllDataFile(): Unit = {
     dir.listFiles(datFilter).foreach(_.delete())
   }
-
-
 }

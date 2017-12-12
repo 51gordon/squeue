@@ -10,6 +10,7 @@ class FQueueTest extends FunSuite with BeforeAndAfter with QueueTestTrait {
   var queue: FQueue = _
 
   before {
+    initQueueEnv()
     queue = new FQueue(rootDir, 512)
   }
 

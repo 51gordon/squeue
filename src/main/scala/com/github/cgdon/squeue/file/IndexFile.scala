@@ -16,13 +16,15 @@ class IndexFile(parent: File) extends QueueFile {
   var writeIdx: Int = -1
   var writePos: Int = -1
   val queueSize = new AtomicLong(0)
-  var totalInRecord: Long = 0
-  var totalOutRecord: Long = 0
+  var totalInRecordNum: Long = 0
+  var totalInRecordSize: Long = 0
+  var totalOutRecordNum: Long = 0
+  var totalOutRecordSize: Long = 0
 
   private val idxFile = new File(parent, IndexFile.INDEX_FILE_NAME)
   init(idxFile, IndexFile.INDEX_LIMIT_LENGTH)
 
-  override def magic(): String = "sfqueidx"
+  override def magic(): String = "sque_idx"
 
   /**
     * 初始化文件
@@ -36,8 +38,10 @@ class IndexFile(parent: File) extends QueueFile {
     mbBuffer.putInt(1) // put write index(start:20)
     mbBuffer.putInt(DATA_HEADER_LENGTH) // put write pos(start:24)
     mbBuffer.putLong(0L) // put size pos(start:28)
-    mbBuffer.putLong(0L) // put total in records(start:36)
-    mbBuffer.putLong(0L) // put total out records(start:44)
+    mbBuffer.putLong(0L) // put total in record num(start:36)
+    mbBuffer.putLong(0L) // put total out record num(start:44)
+    mbBuffer.putLong(0L) // put total in record size(start:52)
+    mbBuffer.putLong(0L) // put total out record size(start:60)
   }
 
   /**
@@ -55,18 +59,22 @@ class IndexFile(parent: File) extends QueueFile {
     writeIdx = mbBuffer.getInt()
     writePos = mbBuffer.getInt()
     queueSize.set(mbBuffer.getLong())
+    totalInRecordNum = mbBuffer.getLong
+    totalOutRecordNum = mbBuffer.getLong
+    totalInRecordSize = mbBuffer.getLong
+    totalOutRecordSize = mbBuffer.getLong
   }
 
-  /**
-    * 更新读文件的index
-    *
-    * @param idx
-    */
-  def updateReadIdx(idx: Int): Unit = {
-    mbBuffer.position(12)
-    mbBuffer.putInt(idx)
-    this.readIdx = idx
-  }
+  //  /**
+  //    * 更新读文件的index
+  //    *
+  //    * @param idx
+  //    */
+  //  def updateReadIdx(idx: Int): Unit = {
+  //    mbBuffer.position(12)
+  //    mbBuffer.putInt(idx)
+  //    this.readIdx = idx
+  //  }
 
   /**
     * 滚动读文件的位置
@@ -88,16 +96,16 @@ class IndexFile(parent: File) extends QueueFile {
     writePos = DATA_HEADER_LENGTH
   }
 
-  /**
-    * 更新写文件的index
-    *
-    * @param idx
-    */
-  def updateWriteIdx(idx: Int): Unit = {
-    mbBuffer.position(20)
-    mbBuffer.putInt(idx)
-    this.writeIdx = idx
-  }
+  //  /**
+  //    * 更新写文件的index
+  //    *
+  //    * @param idx
+  //    */
+  //  def updateWriteIdx(idx: Int): Unit = {
+  //    mbBuffer.position(20)
+  //    mbBuffer.putInt(idx)
+  //    this.writeIdx = idx
+  //  }
 
   /**
     *
@@ -128,8 +136,11 @@ class IndexFile(parent: File) extends QueueFile {
     // 写位置 + (4 * msgNum + totalMsgLen)
     forwardWritePos(4 * msgNum + totalMsgLen)
 
-    // 总的in数据条数 + 1
-    totalInRecord += msgNum
+    // 总的in数据条数 + msgNum
+    totalInRecordNum += msgNum
+
+    // 总的in数据字节数+totalMsgLen
+    totalInRecordSize += totalMsgLen
   }
 
   def decrementSize(msgLen: Int): Unit = {
@@ -143,8 +154,11 @@ class IndexFile(parent: File) extends QueueFile {
     // 读位置 + (4 * msgNum + totalMsgLen)
     forwardReadPos(4 * msgNum + totalMsgLen)
 
-    // 总的out数据条数+1
-    totalOutRecord += msgNum
+    // 总的out数据条数+msgNum
+    totalOutRecordNum += msgNum
+
+    // 总的out数据字节数+totalMsgLen
+    totalOutRecordSize += totalMsgLen
   }
 
   /**
@@ -165,6 +179,18 @@ class IndexFile(parent: File) extends QueueFile {
     createFile()
     loadFile()
   }
+
+  def clearStatData(): Unit = {
+    totalInRecordNum = 0
+    totalInRecordSize = 0
+    totalOutRecordNum = 0
+    totalOutRecordSize = 0
+    mbBuffer.position(36)
+    mbBuffer.putLong(0)
+    mbBuffer.putLong(0)
+    mbBuffer.putLong(0)
+    mbBuffer.putLong(0)
+  }
 }
 
 object IndexFile {
@@ -172,14 +198,16 @@ object IndexFile {
   // 索引文件名
   val INDEX_FILE_NAME = "sfq.idx"
 
-  //  8 // magic
-  //  4 // version
-  //  4 // read index
-  //  4 // read pos
-  //  4 // write index
-  //  4 // write pos
-  //  8 // queue size
-  //  8 // total in record
-  //  8 // total out record
-  val INDEX_LIMIT_LENGTH = 52
+  //  8, magic
+  //  4, version
+  //  4, read index
+  //  4, read pos
+  //  4, write index
+  //  4, write pos
+  //  8, queue size
+  //  8, total in record num
+  //  8, total out record num
+  //  8, total in record size
+  //  8, total out record size
+  val INDEX_LIMIT_LENGTH = 68
 }
