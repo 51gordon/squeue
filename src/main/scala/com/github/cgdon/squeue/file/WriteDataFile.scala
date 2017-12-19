@@ -1,7 +1,7 @@
 package com.github.cgdon.squeue.file
 
 import java.io.File
-import java.util.concurrent.{ ExecutorService, Executors, ThreadFactory }
+import java.util.concurrent.{ Executors, ScheduledExecutorService, ThreadFactory, TimeUnit }
 
 import com.github.cgdon.squeue.util.Utils._
 
@@ -15,16 +15,12 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
   @volatile var shouldClose = false
 
   // 每隔一段时间自动flush
-  val pool: ExecutorService = Executors.newSingleThreadExecutor(new ThreadFactory {
+  val pool: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory {
     override def newThread(r: Runnable): Thread = new Thread(r, "DataFileForceThread")
   })
-  pool.submit(new Runnable {
-    override def run(): Unit = {
-      while (!shouldClose) {
-        mbBuffer.force()
-      }
-    }
-  })
+  pool.scheduleWithFixedDelay(new Runnable {
+    override def run(): Unit = if (!shouldClose) mbBuffer.force()
+  }, 10, 10, TimeUnit.MILLISECONDS)
 
   /**
     * 是否已写满

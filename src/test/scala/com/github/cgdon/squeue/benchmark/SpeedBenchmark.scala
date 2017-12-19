@@ -18,19 +18,26 @@ object SpeedBenchmark extends App {
 
   val seed = ("a" * 1024).getBytes()
 
-  val header = Array("size", "cost(s)", "speed(msg/s)")
+  val header = Array("size", "dataFileNum", "cost(s)", "speed(msg/s)", "speed(MB/s)")
 
   val res = sizeArr.map { size =>
     FileUtils.deleteQuietly(rootDir)
     rootDir.mkdirs()
-    val queue = new FQueue(rootDir, dataFileMb)
+
     val startTs = System.currentTimeMillis()
+
+    val queue = new FQueue(rootDir, dataFileMb)
     for (_ <- 0 until size) {
-      queue.add(seed)
+      queue.offer(seed)
     }
-    val costSecond = (System.currentTimeMillis() - startTs) / 1000.0
     queue.close()
-    Array(size.toString, costSecond.formatted("%.2f"), (size / costSecond).formatted("%.2f"))
+
+    val costSecond = (System.currentTimeMillis() - startTs) / 1000.0
+
+    val dataFileNum = FileUtils.listFiles(rootDir, Array("dat"), false).size()
+    val writeMsgSpeed = (size / costSecond).formatted("%.2f")
+    val writeMsgByteSpeed = (size / 1024.0 / costSecond).formatted("%.2f")
+    Array(size.toString, dataFileNum.toString, costSecond.formatted("%.2f"), writeMsgSpeed, writeMsgByteSpeed)
   }
 
   println(new TextTable(header, res))

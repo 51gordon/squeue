@@ -33,11 +33,11 @@ trait QueueFile extends AutoCloseable {
   def init(f: File, initMaxLength: Int): Unit = {
     if (!f.exists()) {
       f.createNewFile()
-      initMemoryMapFile(f, initMaxLength)
+      initMbBuffer(f, initMaxLength)
       // 初始化文件
-      createFile()
+      initEmptyFile()
     } else {
-      initMemoryMapFile(f, initMaxLength)
+      initMbBuffer(f, initMaxLength)
     }
 
     // 加载文件
@@ -46,13 +46,13 @@ trait QueueFile extends AutoCloseable {
 
   /**
     *
-    * 初始化内存文件映射相关对象
+    * 初始化内存文件映射相关对象，此操作略微耗时，相比close的性能损耗，还是少很多
     *
     * @param f             文件
     * @param initMaxLength 初始时文件最大长度
     * @return
     */
-  def initMemoryMapFile(f: File, initMaxLength: Int): Unit = {
+  def initMbBuffer(f: File, initMaxLength: Int): Unit = {
     raFile = new RandomAccessFile(f, "rwd")
     fc = raFile.getChannel
     FILE_LIMIT = math.max(f.length().toInt, initMaxLength)
@@ -78,7 +78,7 @@ trait QueueFile extends AutoCloseable {
   /**
     * 从空文件初始化为相应格式的文件
     */
-  protected def createFile(): Unit
+  protected def initEmptyFile(): Unit
 
   /**
     * 加载文件到内存
@@ -86,7 +86,7 @@ trait QueueFile extends AutoCloseable {
   protected def loadFile(): Unit
 
   /**
-    * 关闭文件资源
+    * 关闭文件资源，此操作比较耗时
     */
   override def close(): Unit = {
     mbBuffer.force().clear()
