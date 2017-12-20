@@ -20,7 +20,7 @@ class WriteDataFile(dir: File, index: Int, dataFileSizeMb: Int) extends DataFile
   })
   pool.scheduleWithFixedDelay(new Runnable {
     override def run(): Unit = if (!shouldClose) mbBuffer.force()
-  }, 10, 10, TimeUnit.MILLISECONDS)
+  }, 100, 100, TimeUnit.MILLISECONDS)
 
   /**
     * 是否已写满
